@@ -22,7 +22,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from ctypes import CDLL, CFUNCTYPE, POINTER, c_int, c_uint, pointer, c_ubyte, c_uint8, c_uint32, c_uint16
+from ctypes import CDLL, CFUNCTYPE, POINTER, c_int, c_uint, pointer, c_ubyte, c_uint8, c_uint32, c_uint16, c_void_p, c_int32
 from smbus2 import SMBus, i2c_msg
 import os
 import site
@@ -56,6 +56,37 @@ for lib_location in _POSSIBLE_LIBRARY_LOCATIONS:
         lib_file = files[0]
         try:
             _TOF_LIBRARY = CDLL(lib_file)
+            
+            _TOF_LIBRARY.initialise.argtypes = [c_uint8, c_uint8]
+            _TOF_LIBRARY.initialise.restype = c_void_p
+
+            _TOF_LIBRARY.startRanging.argtypes = [c_void_p]
+            _TOF_LIBRARY.startRanging.restype = c_int
+
+            _TOF_LIBRARY.stopRanging.argtypes = [c_void_p]
+            _TOF_LIBRARY.stopRanging.restype = c_int
+
+            _TOF_LIBRARY.getDistance.argtypes = [c_void_p]
+            _TOF_LIBRARY.getDistance.restype = c_int32
+
+            _TOF_LIBRARY.isRangingReady.argtypes = [c_void_p]
+            _TOF_LIBRARY.isRangingReady.restype = c_uint8
+
+            _TOF_LIBRARY.waitForData.argtypes = [c_void_p]
+            _TOF_LIBRARY.waitForData.restype = c_int32
+
+            _TOF_LIBRARY.setDistanceMode.argtypes = [c_void_p, c_int]
+            _TOF_LIBRARY.setDistanceMode.restype = c_int
+
+            _TOF_LIBRARY.setMeasurementTimingBudgetMicroSeconds.argtypes = [c_void_p, c_int]
+            _TOF_LIBRARY.setMeasurementTimingBudgetMicroSeconds.restype = c_int
+
+            _TOF_LIBRARY.setDeviceAddress.argtypes = [c_void_p, c_int]
+            _TOF_LIBRARY.setDeviceAddress.restype = c_int
+
+            _TOF_LIBRARY.VL53LX_set_i2c.argtypes = [_I2C_READ_FUNC, _I2C_WRITE_FUNC]
+            _TOF_LIBRARY.VL53LX_set_i2c.restype = None
+            
             break
         except OSError as e:
             print("Could not load library: {}".format(e))
@@ -146,7 +177,7 @@ class VL53L3CX:
 
     def stop_ranging(self):
         """Stop VL53L3CX ToF Sensor Ranging"""
-        print(_TOF_LIBRARY.stopRanging(self._dev))
+        _TOF_LIBRARY.stopRanging(self._dev)
 
     def get_distance(self):
         """Get distance from VL53L3CX ToF Sensor"""

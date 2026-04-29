@@ -43,5 +43,7 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     ext_modules=[extension],
+    py_modules=['VL53L3CX'],
+    package_dir={'': 'python'},
     install_requires=['smbus2'],
 )
